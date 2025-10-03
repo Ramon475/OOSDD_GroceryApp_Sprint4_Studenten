@@ -1,5 +1,4 @@
-﻿
-using Grocery.Core.Interfaces.Repositories;
+﻿using Grocery.Core.Interfaces.Repositories;
 using Grocery.Core.Interfaces.Services;
 using Grocery.Core.Models;
 
@@ -20,7 +19,25 @@ namespace Grocery.Core.Services
         }
         public List<BoughtProducts> Get(int? productId)
         {
-            throw new NotImplementedException();
+            var result = new List<BoughtProducts>();
+            if (productId is null) return result;
+
+            var product = _productRepository.Get(productId.Value);
+            if (product is null) return result;
+
+            foreach (var item in _groceryListItemsRepository.GetAll().Where(i => i.ProductId == productId.Value))
+            {
+                if (_groceryListRepository.Get(item.GroceryListId) is not GroceryList list ||
+                    _clientRepository.Get(list.ClientId)            is not Client client)
+                {
+                    continue;
+                }
+
+                result.Add(new BoughtProducts(client, list, product));
+            }
+
+            return result;
         }
+
     }
 }
