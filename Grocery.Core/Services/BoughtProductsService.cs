@@ -37,8 +37,6 @@ namespace Grocery.Core.Services
             }
 
             return result;
-
-            return result;
         }
 
     }
