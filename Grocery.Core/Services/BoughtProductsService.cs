@@ -22,25 +22,21 @@ namespace Grocery.Core.Services
             var result = new List<BoughtProducts>();
             if (productId is null) return result;
 
-            int pid = productId.Value;
-            
-            var product = _productRepository.Get(pid);
+            var product = _productRepository.Get(productId.Value);
             if (product is null) return result;
 
-            var itemsForProduct = _groceryListItemsRepository
-                .GetAll()
-                .Where(item => item.ProductId == pid);
-
-            foreach (var item in itemsForProduct)
+            foreach (var item in _groceryListItemsRepository.GetAll().Where(i => i.ProductId == productId.Value))
             {
-                var list = _groceryListRepository.Get(item.GroceryListId);
-                if (list is null) continue;
-
-                var client = _clientRepository.Get(list.ClientId);
-                if (client is null) continue;
+                if (_groceryListRepository.Get(item.GroceryListId) is not GroceryList list ||
+                    _clientRepository.Get(list.ClientId)            is not Client client)
+                {
+                    continue;
+                }
 
                 result.Add(new BoughtProducts(client, list, product));
             }
+
+            return result;
 
             return result;
         }
